@@ -1,0 +1,8 @@
+cat > .gitignore <<'EOF'
+hf_ankh/
+*.zip
+*.pdf
+__pycache__/
+*.pyc
+.venv/
+EOF

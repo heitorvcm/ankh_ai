@@ -1,0 +1,6 @@
+numpy
+gymnasium
+stable-baselines3
+sb3-contrib
+psutil
+# PyTorch com CUDA: instale pelo comando de https://pytorch.org/get-started/locally/

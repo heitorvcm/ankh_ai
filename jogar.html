@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ankh — Gods of Egypt</title>
+<style>
+:root{
+  --wood:#2b1d12;--parch1:#f0e2bb;--parch2:#dcc58f;--ink:#3a2a14;--gold:#d9a93a;--gold2:#b8923a;
+  --red:#8a2a1c;--dark:#2a1b10;--dark2:#3a2616;--cream:#f6ead0;--ok:#00e676;--blue:#2f7fd1;
+  --serif:'Cinzel','Trajan Pro','Palatino Linotype','Book Antiqua',Georgia,serif;
+}
+*{box-sizing:border-box}
+html{background:#2b1d12}
+body{margin:0;color:var(--ink);font:14px/1.35 'Segoe UI',system-ui,Roboto,sans-serif;min-height:100vh;
+  background:repeating-linear-gradient(90deg,rgba(0,0,0,.10) 0 2px,transparent 2px 9px),
+  radial-gradient(ellipse at 50% 0%,rgba(255,200,120,.12),transparent 60%),#2b1d12;
+  background-attachment:fixed}
+button,select,input{font:inherit}
+header{display:flex;gap:10px;align-items:center;padding:8px 16px;background:linear-gradient(#1b120a,#2a1b10);
+  border-bottom:3px solid var(--gold2);box-shadow:0 3px 10px rgba(0,0,0,.6)}
+header h1{margin:0;font:700 22px var(--serif);color:var(--gold);letter-spacing:3px;text-shadow:0 2px 0 #000}
+header .meta{color:#bfa56a;font-size:12px}
+header .sp{flex:1}
+.btn{background:linear-gradient(#c9a24a,#9a7424);color:#2a1b08;border:2px solid #5a3b10;border-radius:7px;
+  padding:5px 12px;font-weight:700;cursor:pointer;box-shadow:0 2px 0 #4a3008}
+.btn:hover{filter:brightness(1.12)}
+.btn:active{transform:translateY(1px)}
+.btn.sm{padding:3px 8px;font-size:12px}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.dark{background:linear-gradient(#4a3a28,#2f2418);color:var(--cream);border-color:#7a5a28}
+select.sel{background:#2f2418;color:var(--cream);border:2px solid #7a5a28;border-radius:6px;padding:3px 6px}
+.hdrlab{color:#bfa56a;font-size:12px}
+
+#table{display:grid;grid-template-columns:350px minmax(0,1fr) 300px;gap:12px;padding:12px 14px;align-items:start}
+#table .dark:last-child,#table .parch:last-child{margin-bottom:0}
+@media(max-width:1250px){#table{grid-template-columns:330px minmax(0,1fr)}#rightcol{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}#rightcol .dark{margin-bottom:0}}
+@media(max-width:860px){#table{grid-template-columns:1fr}#centercol{order:-1}}
+.parch{background:linear-gradient(145deg,var(--parch1),var(--parch2));border:3px solid var(--gold2);border-radius:12px;
+  box-shadow:inset 0 0 22px rgba(120,80,20,.35),0 4px 10px rgba(0,0,0,.55);padding:10px 12px;margin-bottom:12px}
+.parch h2,.dark h2{margin:0 0 6px;font:700 13px var(--serif);letter-spacing:2px;text-transform:uppercase;color:#7b3f12}
+.dark{background:linear-gradient(160deg,var(--dark2),var(--dark));color:var(--cream);border:3px solid var(--gold2);
+  border-radius:12px;box-shadow:inset 0 0 24px rgba(0,0,0,.6),0 4px 10px rgba(0,0,0,.55);padding:10px 12px;margin-bottom:12px}
+.dark h2{color:var(--gold)}
+.hint{font-size:12px;opacity:.8}
+
+/* mesa de oponentes */
+#opps{display:flex;gap:10px;flex-wrap:wrap;padding:10px 14px 0}
+#opps:empty{display:none}
+.opp{flex:1 1 210px;max-width:440px;border:3px solid var(--gold2);border-radius:11px;overflow:hidden;
+  background:linear-gradient(160deg,var(--dark2),var(--dark));color:var(--cream);box-shadow:0 4px 9px rgba(0,0,0,.55)}
+.opp.turn{box-shadow:0 0 0 3px #ffd54a,0 0 18px #ffd54a}
+.opp.dead{opacity:.45}
+.opp .hd{padding:4px 9px;font:700 14px var(--serif);display:flex;gap:8px;align-items:center;color:#fff;text-shadow:0 1px 2px #000}
+.opp .bd{padding:5px 9px;font-size:12px}
+.chip{display:inline-block;font-size:10.5px;padding:0 5px;border-radius:7px;margin:1px 2px 0 0;background:#4a3a28;color:var(--cream)}
+.chip.l1{background:#3b6a3b}.chip.l2{background:#3b5a8a}.chip.l3{background:#7a3b6a}
+.chip.bad{background:#8a2a1c}.chip.warn{background:#8a6a1c}
+.mini{display:inline-block;width:14px;height:18px;border-radius:3px;margin-right:2px;background:#6b5a3a;vertical-align:middle;border:1px solid #1b120a}
+.mini.used{background:#a8442a}
+.stat{display:inline-block;margin-right:9px}
+
+/* painel central (acoes + eventos) */
+.arow{display:flex;align-items:center;gap:4px;padding:4px 5px;margin:3px 0;border-radius:8px;background:rgba(0,0,0,.25);border:2px solid transparent}
+.arow b{width:98px;font:700 11.5px var(--serif);color:var(--gold);line-height:1.1}
+.arow .slot{width:23px;height:23px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#5a4630,#2a1d10);border:2px solid #7a5a28;display:inline-block;position:relative}
+.arow .slot.off{background:#120c07;border-color:#2a1d10}
+.arow .slot.end{background:radial-gradient(circle at 35% 30%,#fff,#d9c9a0);border-color:#c0392b}
+.arow .slot.end::after{content:'!';position:absolute;inset:0;text-align:center;font:700 14px/19px serif;color:#8a2a1c}
+.arow .slot.mk{background:radial-gradient(circle at 35% 30%,#ffe28a,#c9951c);border-color:#fff3c0;box-shadow:0 0 8px #ffd54a}
+.arow.legal{border-color:var(--ok);cursor:pointer;box-shadow:0 0 10px rgba(0,230,118,.5)}
+.arow.legal:hover{background:rgba(0,230,118,.18)}
+.arow.picked{border-color:#ffd54a;background:rgba(255,213,74,.25)}
+.arow.flash{animation:flash 1s ease-out 2}
+@keyframes flash{0%,100%{background:rgba(0,0,0,.25)}40%{background:rgba(255,213,74,.5)}}
+.evgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:4px}
+.ev{aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 35% 30%,#4a3a28,#1d130b);border:2px solid #7a5a28;
+  display:flex;align-items:center;justify-content:center;font-size:15px;position:relative;color:var(--cream)}
+.ev.conf{border-radius:7px;background:radial-gradient(circle at 35% 30%,#7a2f20,#3a130b);border-color:#c0663a}
+.ev.camel{border-color:#c9a24a}
+.ev.done{opacity:.38}
+.ev.next{box-shadow:0 0 0 2px #ffd54a}
+.ev.cur::before{content:'';position:absolute;inset:-5px;border-radius:50%;border:3px solid var(--blue);box-shadow:0 0 9px var(--blue)}
+.ev small{position:absolute;bottom:-1px;right:2px;font:700 8.5px sans-serif;color:#ffd54a}
+.evnote{font-size:11px;color:#bfa56a;margin-top:6px}
+
+/* tabuleiro */
+#boardframe{position:relative;border:8px solid #6b4a1c;border-radius:14px;
+  box-shadow:0 0 0 3px var(--gold),0 8px 18px rgba(0,0,0,.7),inset 0 0 30px rgba(0,0,0,.5);
+  background:radial-gradient(circle,#c8b27a,#8b7440)}
+#board{width:100%;height:auto;max-height:80vh;display:block}
+#banner{position:absolute;left:50%;top:8px;transform:translateX(-50%);z-index:3;max-width:92%;min-width:240px;
+  background:rgba(25,15,8,.92);color:var(--cream);border:2px solid var(--gold);border-radius:10px;padding:6px 14px;text-align:center;
+  font-size:14px;box-shadow:0 3px 10px rgba(0,0,0,.6);pointer-events:none}
+#banner b{color:var(--gold)}
+#banner .l2{color:#ffd54a;font-weight:700}
+#banner .dot,.dot{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;border:1px solid #000;vertical-align:middle}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+@keyframes pop{0%{transform:scale(1.7);opacity:0}60%{transform:scale(.9);opacity:1}100%{transform:scale(1)}}
+.pop{animation:pop .45s ease-out;transform-box:fill-box;transform-origin:center}
+.pulse{animation:pulse .9s infinite}
+.march{stroke-dasharray:9 6;animation:march .6s linear infinite}
+@keyframes march{to{stroke-dashoffset:-15}}
+.cell.legal{cursor:pointer}
+
+/* maos e paineis inferiores */
+.pw{display:flex;gap:6px;margin:5px 0;padding:4px 5px;border-radius:7px;background:rgba(0,0,0,.28);border:2px solid transparent;align-items:flex-start;min-height:34px}
+.pw .tk{flex:0 0 22px;height:22px;border-radius:50%;background:#120c07;border:2px solid #5a4630;margin-top:1px;
+  display:flex;align-items:center;justify-content:center;font-size:13px;color:#000}
+.pw.on .tk{border-color:#fff}
+.pw.on{background:rgba(217,169,58,.2)}
+.pw.legal{border-color:var(--ok);cursor:pointer;box-shadow:0 0 9px rgba(0,230,118,.55)}
+.pw.legal:hover{background:rgba(0,230,118,.2)}
+.pw.picked{border-color:#ffd54a;background:rgba(255,213,74,.28)}
+.pw b{font:700 11.5px var(--serif);color:var(--gold);display:block}
+.pw span{font-size:10.5px;opacity:.88;line-height:1.2;display:block}
+.lvls{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.lvls h3{margin:0 0 2px;font:700 11px var(--serif);color:#e6cf92;text-align:center;border-bottom:1px solid #7a5a28}
+.abil{background:rgba(0,0,0,.3);border:1px solid #7a5a28;border-radius:7px;padding:5px 8px;margin:4px 0 6px;font-size:12px}
+.abil b{color:var(--gold);font-family:var(--serif)}
+.pool{display:flex;gap:4px;margin-top:5px;align-items:center;flex-wrap:wrap}
+.ankhtk{display:inline-flex;width:22px;height:22px;border-radius:50%;align-items:center;justify-content:center;font-size:12px;color:#fff;border:2px solid #fff;text-shadow:0 1px 1px #000}
+
+#handbox{margin:12px 0 0}
+#hand{display:flex;gap:7px;flex-wrap:wrap;padding:16px 2px 4px;justify-content:center}
+.bcard{width:108px;height:164px;border-radius:9px;border:3px solid #4a3010;background:linear-gradient(#f6ebc8,#dcc48a);
+  position:relative;box-shadow:0 4px 8px rgba(0,0,0,.55);transition:transform .15s,box-shadow .15s;overflow:hidden;color:var(--ink)}
+.bcard .ttl{height:26px;color:#fff;font:700 11px/26px var(--serif);text-align:center;padding-left:24px;text-shadow:0 1px 2px #000;letter-spacing:.3px;white-space:nowrap}
+.bcard .bn{position:absolute;left:3px;top:2px;width:24px;height:24px;border-radius:50%;background:#1b120a;color:var(--gold);border:2px solid var(--gold);
+  font:700 12px/20px sans-serif;text-align:center}
+.bcard .art{height:52px;text-align:center;font-size:34px;line-height:52px}
+.bcard .tx{font-size:9.6px;line-height:1.22;padding:0 6px;color:#3a2a14}
+.bcard.playable{cursor:pointer;box-shadow:0 0 0 3px var(--ok),0 6px 14px rgba(0,0,0,.6)}
+.bcard.playable:hover{transform:translateY(-10px)}
+.bcard.picked{transform:translateY(-18px);box-shadow:0 0 0 4px #ffd54a,0 0 18px #ffd54a}
+.bcard.used{filter:grayscale(.85) brightness(.72)}
+.bcard.used::after{content:'USADA';position:absolute;left:0;right:0;top:46%;text-align:center;font:700 14px var(--serif);color:#7a1f1f;transform:rotate(-14deg);letter-spacing:2px}
+.bcard.rev{width:86px;height:128px}.bcard.rev .art{height:38px;font-size:26px;line-height:38px}.bcard.rev .tx{display:none}
+
+#tray{position:sticky;top:0;z-index:30;padding:7px 16px;color:var(--cream);
+  background:linear-gradient(#3a2616,#2a1b10);border-bottom:3px solid var(--gold2);box-shadow:0 5px 14px rgba(0,0,0,.65)}
+#tray .decin{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;max-width:1700px;margin:0 auto}
+#tray .prompt{flex:1 1 260px;font-size:13.5px;min-width:200px}
+#tray .ctl{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}
+#tray .acts{display:flex;flex-wrap:wrap;gap:6px}
+#tray .conf{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:4px 10px;border:2px dashed var(--gold);border-radius:8px;background:rgba(255,213,74,.16)}
+#tray .conf b{color:#ffe28a}
+#tray input[type=range]{width:200px;accent-color:#d9a93a}
+#tray .bidn{font:700 18px var(--serif);color:#ffe28a;min-width:30px;text-align:center}
+#tray select{padding:5px 8px;background:#2f2418;border:2px solid #7a5a28;border-radius:6px;color:var(--cream);max-width:260px}
+#status{font:700 13px var(--serif);padding:5px 12px;border-radius:8px;background:#5a4630;color:var(--cream);letter-spacing:.5px;white-space:nowrap}
+#status.me{background:#1f6b3a;color:#e5ffee;box-shadow:0 0 12px rgba(0,230,118,.5)}
+#status.end{background:#7a1f1f}
+#log{height:230px;overflow:auto;font:11.5px/1.4 ui-monospace,Consolas,monospace;background:rgba(0,0,0,.3);border-radius:7px;padding:6px;color:var(--cream)}
+#log div.ev1{color:#ffd54a;font-weight:700}#log div.fim{color:#ff8a80;font-weight:700}#log div.me{color:#9dffc1}
+#battle .row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+#battle .who{text-align:center;font-size:11px;color:var(--cream)}
+#modal,#endov{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:20}
+.box{background:linear-gradient(145deg,var(--parch1),var(--parch2));border:4px solid var(--gold2);border-radius:14px;padding:20px;width:min(430px,92vw);
+  box-shadow:0 10px 30px rgba(0,0,0,.8)}
+.box h2{margin:0 0 6px;font:700 20px var(--serif);color:#7b3f12;letter-spacing:2px}
+.box label{display:block;margin:10px 0 3px;font-weight:600}
+.box select,.box input{width:100%;padding:6px;background:#fbf3d9;border:2px solid var(--gold2);border-radius:6px;color:var(--ink)}
+.warn{background:#8a6a1c;color:#fff;border-radius:6px;padding:6px 10px;margin:8px 14px 0;font-size:12.5px}
+</style>
+</head>
+<body>
+<header>
+  <h1>☥ ANKH</h1><span class="meta" id="meta"></span><span class="sp"></span>
+  <span class="hdrlab">Velocidade</span>
+  <select id="speed" class="sel"><option value="1800">Lenta</option><option value="1000" selected>Normal</option><option value="450">Rápida</option><option value="0">Instantânea</option></select>
+  <button class="btn dark sm" id="bpause">⏸ Pausar</button>
+  <button class="btn dark sm" id="bstep" disabled>⏭ Passo</button>
+  <button class="btn dark sm" id="bskip">⏩ Pular</button>
+  <label class="hdrlab"><input type="checkbox" id="coords"> coordenadas</label>
+  <button class="btn" id="btnnew">Nova partida</button>
+</header>
+<div id="tray"><div class="decin"><div id="status">Carregando…</div></div></div>
+<div id="warn"></div>
+<div id="opps"></div>
+<div id="table">
+  <div id="leftcol">
+    <div class="dark" id="dash"></div>
+    <div class="dark" id="god"></div>
+  </div>
+  <div id="centercol">
+    <div id="boardframe"><div id="banner"></div><svg id="board" xmlns="http://www.w3.org/2000/svg"></svg></div>
+    <div class="parch" id="handbox"><h2>Suas cartas de batalha</h2><div id="hand"></div></div>
+  </div>
+  <div id="rightcol">
+    <div class="dark"><h2>Devoção</h2><div id="devo"></div></div>
+    <div class="dark" id="battlebox" style="display:none"><h2>Batalha em andamento</h2><div id="battle"></div></div>
+    <div class="dark"><h2>Registro</h2><div id="log"></div></div>
+  </div>
+</div>
+<div id="modal"><div class="box">
+  <h2>Nova partida</h2>
+  <label>Cenário</label><select id="f_sc"></select>
+  <label>Seu assento (J0 joga primeiro)</label><select id="f_seat"></select>
+  <label>Seu deus</label><select id="f_god"></select>
+  <label>IA dos outros jogadores</label><select id="f_ai"></select>
+  <label>Seed (opcional)</label><input id="f_seed" placeholder="aleatória">
+  <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end">
+    <button class="btn dark" id="f_cancel">Cancelar</button><button class="btn" id="f_go">Jogar</button>
+  </div>
+</div></div>
+<div id="endov"><div class="box" style="text-align:center"><h2 id="endt"></h2><p id="endp"></p>
+  <button class="btn" onclick="document.getElementById('endov').style.display='none'">Ver o tabuleiro</button>
+  <button class="btn" onclick="openModal()">Nova partida</button></div></div>
+
+<script>
+"use strict";
+let B = null, S = null, OPT = null, LOG = [], FRAME = null, SEL = null, HOVER = null, busy = false, ENDSHOWN = null;
+const PLAY = {on: false, paused: false, skip: false, wake: null};
+const SZ = 30;
+const GOD_COL = ['#d9534f', '#8e7cc3', '#4fb3d9', '#6aa84f', '#f0a030'];
+const GOD_PT = ['Amun', 'Anubis', 'Ísis', 'Osíris', 'Rá'];
+const GOD_ABILITY = [
+  ['Mysterious Forms', 'Em 1 batalha por Conflito, joga 2 cartas de batalha (anuncie antes dos outros escolherem).'],
+  ['Judge of the Dead', 'Guerreiros inimigos mortos podem ser presos aqui: +1 de força por preso (máx. +3).'],
+  ['Protectress', 'Figuras suas adjacentes a inimigos ficam Protegidas: podem sobreviver à resolução da batalha.'],
+  ['Gateway to the Underworld', 'Ao perder uma batalha, coloca/realoca um token Underworld. Invoca neles; inimigos não terminam ali.'],
+  ['Radiance', 'Ao invocar, pode pôr um Sol na figura (Radiante): +1 Devoção ao vencer/dominar na região.']];
+const KIND_ABBR = {1: 'D', 2: 'g', 3: 'Mu', 4: 'Sa', 5: 'Ap', 6: 'Es', 7: 'Af', 8: 'Gm'};
+const KIND_PT = {1: 'Deus', 2: 'Guerreiro', 3: 'Mummy', 4: 'Satet', 5: 'Apep', 6: 'Giant Scorpion', 7: 'Androsphinx', 8: 'Cat-Mummy'};
+const MON_PT = ['Obelisco', 'Templo', 'Pirâmide'];
+const CARD_PT = [
+  ['Plague of Locusts', '+1', '🦗', '#7a1f1f', 'Lance cego de Seguidores (todos pagam). Figuras morrem, exceto as de quem apostou mais.'],
+  ['Build Monument', '+0', '🏛', '#6b4a1f', 'Pague 3 Seguidores e construa um Monumento numa casa vazia da região.'],
+  ['Chariots', '+3', '🐎', '#3d4a5a', 'Apenas +3 de força.'],
+  ["Cycle of Ma'at", '+0', '🪶', '#5a3d7a', 'Depois da batalha, recupera todas as suas cartas usadas.'],
+  ['Drought', '+1', '☀', '#a8761a', 'Se vencer: +1 Devoção por figura sua em deserto na região.'],
+  ['Flood', '+0', '🌊', '#1f5f8a', 'Ganha 1 Seguidor por figura sua em terra fértil; elas não morrem na resolução.'],
+  ['Miracle', '+0', '✨', '#9a7e12', 'Depois da resolução: +1 Devoção por figura sua morta na batalha.']];
+const POWER_PT = [
+  ['Commanding', 'Vence batalha: +3 Seguidores.'],
+  ['Inspiring', 'Build Monument sai de graça.'],
+  ['Omnipresent', 'Início de Conflito: +1 Seguidor por região com figura sua.'],
+  ['Revered', 'Ganhar Seguidores: +1 extra.'],
+  ['Resplendent', 'Com 3+ Monumentos iguais, o Deus tem força base 3.'],
+  ['Obelisk Attuned', 'Início de batalha: leve figuras a casas ao lado dos seus Obeliscos.'],
+  ['Temple Attuned', 'Cada Templo seu: +2 de força se há figura sua adjacente.'],
+  ['Pyramid Attuned', 'Invocar: +1 figura adjacente a cada Pirâmide sua.'],
+  ['Glorious', 'Vence por 3+ de margem: 3 Devoção em vez de 1.'],
+  ['Magnanimous', 'Perde com 2+ figuras: +2 Devoção.'],
+  ['Bountiful', 'Na zona vermelha: +1 Devoção extra por ganho.'],
+  ['Worshipful', 'Após batalha: 2 Seguidores → 1 Devoção.']];
+const ACT_PT = [['Mover figuras', '👣'], ['Invocar figura', '🏺'], ['Ganhar seguidores', '👥'], ['Desbloquear poder', '☥']];
+const PROMPT = {
+  CHOOSE_ACTION: 'Escolha uma ação no painel central (a 2ª ação precisa estar numa linha mais baixa que a 1ª).',
+  MOVE_SELECT: 'Clique numa figura sua para movê-la (até 3 casas), ou termine o movimento.',
+  MOVE_DEST: 'Clique no destino (clique na casa de origem para deixar a figura onde está).',
+  SUMMON_TYPE: 'O que você quer invocar?',
+  SUMMON_DEST: 'Clique na casa onde a figura será colocada.',
+  UNLOCK_PICK: 'Escolha o poder Ankh a desbloquear (no painel do seu deus).',
+  AMUN_DECLARE: 'Amun: anunciar que jogará 2 cartas nesta batalha?',
+  CLAW_POINT: 'Giant Scorpion: escolha a orientação das garras.',
+  PUSH_DEST: 'Satet: para onde empurrar o inimigo?',
+  UNDERWORLD_SRC: 'Underworld: qual token realocar?',
+  UNDERWORLD_DEST: 'Underworld: clique na casa para o token.',
+  ATTUNE_SRC: 'Obelisk Attuned: clique numa figura para levá-la a um Obelisco.',
+  ATTUNE_DEST: 'Obelisk Attuned: clique na casa de destino.',
+  WORSHIP: 'Worshipful: sacrificar 2 Seguidores por 1 Devoção?',
+  CONTROL_PICK: 'Controlar Monumento: clique no Monumento que você quer controlar.',
+  CAMEL_LINE: 'Caravana de Camelos: escolha a linha (o tabuleiro mostra a prévia).',
+  CAMEL_KEEP: 'Qual das duas novas regiões mantém o token de ordem do Conflito antigo?',
+  CAMEL_SWAP: 'Quer trocar um token de ordem do Conflito?',
+  BATTLE_CARD: 'Batalha! Escolha sua carta (em segredo) clicando nela.',
+  BUILD_TYPE: 'Build Monument: construir qual Monumento?',
+  BUILD_CELL: 'Clique na casa vazia onde construir.',
+  BID: 'Plague of Locusts: quantos Seguidores você aposta? (todos pagam o lance)',
+  TIEBREAK: 'Empate na batalha: usar o token de desempate?'
+};
+const TER = {F: 'url(#pF)', D: 'url(#pD)', W: 'url(#pW)'};
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const setHTML = (id, h) => { $(id).innerHTML = h; };
+const cellOf = i => (S.cells && S.cells[i]) || {};
+const gcol = seat => (S.players[seat] ? GOD_COL[S.players[seat].god] : '#888');
+
+// ---------- geometria ----------
+function cxy(i) { const c = B.cells[i]; return {x: 40 + c.col * 1.5 * SZ, y: 40 + c.r2 * (Math.sqrt(3) / 2) * SZ}; }
+function hexPts(x, y, k) {
+  const s = SZ * (k || 1), p = [];
+  for (let n = 0; n < 6; n++) { const a = Math.PI / 3 * n; p.push((x + s * Math.cos(a)).toFixed(1) + ',' + (y + s * Math.sin(a)).toFixed(1)); }
+  return p.join(' ');
+}
+function edgeSeg(i, j) {
+  const a = cxy(i), b = cxy(j), mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+  let dx = b.x - a.x, dy = b.y - a.y; const L = Math.hypot(dx, dy) || 1; dx /= L; dy /= L;
+  const h = SZ / 2;
+  return [mx + dy * h, my - dx * h, mx - dy * h, my + dx * h].map(v => v.toFixed(1));
+}
+const lineEl = (s, st, w, ex) => `<line x1="${s[0]}" y1="${s[1]}" x2="${s[2]}" y2="${s[3]}" stroke="${st}" stroke-width="${w}" stroke-linecap="round" ${ex || ''}/>`;
+
+// ---------- tabuleiro ----------
+const DEFS = `<defs>
+<pattern id="pF" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="#86b25f"/><path d="M1 8 L2 5 M5 9 L6 6 M8 4 L9 1" stroke="#6f9b4a" stroke-width="1.2"/></pattern>
+<pattern id="pD" width="9" height="9" patternUnits="userSpaceOnUse"><rect width="9" height="9" fill="#e6cd8c"/><circle cx="2" cy="2" r=".9" fill="#d3b672"/><circle cx="6.5" cy="6" r=".9" fill="#d3b672"/></pattern>
+<pattern id="pW" width="14" height="8" patternUnits="userSpaceOnUse"><rect width="14" height="8" fill="#74aadb"/><path d="M0 5 Q3.5 2 7 5 T14 5" fill="none" stroke="#9cc6ea" stroke-width="1.1"/></pattern>
+<filter id="sh" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="2" stdDeviation="1.6" flood-color="#000" flood-opacity=".55"/></filter>
+<marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#fff"/></marker>
+</defs>`;
+function monSVG(kind, x, y) {
+  const st = 'stroke="#2a2118" stroke-width="1.6"';
+  if (kind === 0) return `<polygon points="${x - 5},${y + 14} ${x - 5},${y - 6} ${x},${y - 17} ${x + 5},${y - 6} ${x + 5},${y + 14}" fill="#f0dc9a" ${st}/><line x1="${x}" y1="${y - 14}" x2="${x}" y2="${y + 12}" stroke="#c9a85a"/>`;
+  if (kind === 1) return `<rect x="${x - 14}" y="${y - 6}" width="28" height="18" fill="#f0dc9a" ${st}/><polygon points="${x - 17},${y - 6} ${x},${y - 16} ${x + 17},${y - 6}" fill="#d6bd72" ${st}/>` +
+    [-7, 0, 7].map(d => `<line x1="${x + d}" y1="${y - 4}" x2="${x + d}" y2="${y + 10}" stroke="#2a2118" stroke-width="1.6"/>`).join('');
+  return `<polygon points="${x},${y - 17} ${x + 17},${y + 12} ${x - 17},${y + 12}" fill="#f0dc9a" ${st}/><line x1="${x}" y1="${y - 17}" x2="${x}" y2="${y + 12}" stroke="#c9a85a"/>`;
+}
+function figSVG(f, x, y, popin) {
+  const col = gcol(f[0]), k = f[1];
+  const r = k === 1 ? SZ * 0.6 : (k === 2 ? SZ * 0.4 : SZ * 0.5);
+  const lab = k === 1 ? GOD_PT[S.players[f[0]].god].slice(0, 2) : KIND_ABBR[k];
+  let s = `<g filter="url(#sh)" ${popin ? 'class="pop"' : ''}><circle cx="${x}" cy="${y}" r="${r}" fill="${col}" stroke="${k === 1 ? '#fff6d0' : '#1b120a'}" stroke-width="${k === 1 ? 3.2 : 2}"/>`;
+  s += `<circle cx="${x}" cy="${y}" r="${r * 0.72}" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.2"/>`;
+  s += `<text x="${x}" y="${y + 4}" text-anchor="middle" font-size="${k === 1 ? 12.5 : 11}" font-weight="700" fill="#fff" style="paint-order:stroke;stroke:#000;stroke-width:2.2px;pointer-events:none">${esc(lab)}</text>`;
+  if (f[2]) s += `<circle cx="${x + r * 0.78}" cy="${y - r * 0.78}" r="5.5" fill="#ffd400" stroke="#7a5a00"/>`;
+  return s + '</g>';
+}
+function cellTitle(i) {
+  const c = cellOf(i), b = B.cells[i];
+  const p = [`(${b.col},${b.line}) ${b.ter === 'W' ? 'água' : b.ter === 'F' ? 'terra fértil' : 'deserto'}`];
+  if (c.f) p.push(`${KIND_PT[c.f[1]]} de J${c.f[0]} (${GOD_PT[S.players[c.f[0]].god]})${c.f[2] ? ' – Radiante' : ''}`);
+  if (c.m) p.push(`${MON_PT[c.m[0]]} ${c.m[1] >= 0 ? 'de J' + c.m[1] : 'neutro'}`);
+  if (c.u) p.push('Underworld');
+  return p.join(' | ');
+}
+function boardSVG() {
+  const D = S.decision, legal = {};
+  if (D) D.actions.forEach(a => { if (a.cell !== undefined) legal[a.cell] = a; });
+  const inReg = {}; (S.cur_region || []).forEach(i => inReg[i] = 1);
+  const hv = HOVER || {}, hvc = {};
+  (hv.region || []).forEach(i => hvc[i] = 1);
+  (hv.regions || []).forEach((r, k) => r.forEach(i => hvc[i] = k + 1));
+  const hl = (FRAME && FRAME.hl) || {};
+  const actorCol = FRAME ? gcol(FRAME.actor) : '#fff';
+  let g = DEFS, maxx = 0, maxy = 0;
+  for (const c of B.cells) {
+    const p = cxy(c.i); maxx = Math.max(maxx, p.x); maxy = Math.max(maxy, p.y);
+    g += `<polygon class="cell${legal[c.i] ? ' legal' : ''}" points="${hexPts(p.x, p.y)}" fill="${TER[c.ter]}" stroke="#5d4a28" stroke-width="1.1"><title>${esc(cellTitle(c.i))}</title></polygon>`;
+    if (inReg[c.i]) g += `<polygon points="${hexPts(p.x, p.y)}" fill="rgba(255,213,74,.26)" stroke="none" pointer-events="none"/>`;
+    if (hvc[c.i]) g += `<polygon points="${hexPts(p.x, p.y)}" fill="${hvc[c.i] === 2 ? 'rgba(255,0,170,.38)' : 'rgba(0,200,255,.38)'}" stroke="none" pointer-events="none"/>`;
+  }
+  for (const [i, j] of B.river) g += lineEl(edgeSeg(i, j), '#2a6fc9', 5.5, 'pointer-events="none"') + lineEl(edgeSeg(i, j), '#7fb6ee', 2, 'pointer-events="none"');
+  for (const [i, j] of S.camels) g += lineEl(edgeSeg(i, j), '#5a3210', 6.5, 'pointer-events="none"') + lineEl(edgeSeg(i, j), '#b8803a', 2.5, 'pointer-events="none"');
+  const edgesPrev = hv.edges || hl.edges;
+  if (edgesPrev) for (const [i, j] of edgesPrev) g += lineEl(edgeSeg(i, j), '#ff2fa8', 6, 'pointer-events="none" class="pulse"');
+  if (hl.from !== null && hl.from !== undefined) { const p = cxy(hl.from); g += `<circle cx="${p.x}" cy="${p.y}" r="${SZ * 0.55}" fill="${actorCol}" fill-opacity=".25" stroke="${actorCol}" stroke-width="2.5" stroke-dasharray="4 3" pointer-events="none"/>`; }
+  for (const k of Object.keys(S.cells || {})) {
+    const i = +k, c = S.cells[k], p = cxy(i);
+    if (c.u && !c.f) g += `<circle cx="${p.x}" cy="${p.y}" r="${SZ * 0.55}" fill="rgba(40,10,60,.6)" stroke="#c7b3f0" stroke-dasharray="3 2" pointer-events="none"/>`;
+    if (c.m) {
+      g += `<g filter="url(#sh)" ${hl.to === i ? 'class="pop"' : ''}>` + monSVG(c.m[0], p.x, p.y);
+      if (c.m[1] >= 0) g += `<circle cx="${p.x + 16}" cy="${p.y + 14}" r="6.5" fill="${gcol(c.m[1])}" stroke="#fff" stroke-width="1.6"/><text x="${p.x + 16}" y="${p.y + 17.5}" text-anchor="middle" font-size="9" fill="#fff" font-weight="700" pointer-events="none">☥</text>`;
+      g += '</g>';
+    }
+    if (c.f) g += figSVG(c.f, p.x, p.y, hl.to === i);
+    if (c.cl) c.cl.forEach(j => { const q = cxy(j); g += `<circle cx="${q.x}" cy="${q.y}" r="${SZ * 0.72}" fill="none" stroke="#d32f2f" stroke-width="2.5" stroke-dasharray="4 3" pointer-events="none"/>`; });
+  }
+  if (hl.from !== null && hl.from !== undefined && hl.to !== null && hl.to !== undefined) {
+    const a = cxy(hl.from), b = cxy(hl.to);
+    g += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${actorCol}" stroke-width="5" opacity=".9" pointer-events="none" class="march" marker-end="url(#arr)"/>`;
+  }
+  if (hl.to !== null && hl.to !== undefined && !(hl.from !== null && hl.from !== undefined)) { const p = cxy(hl.to); g += `<circle cx="${p.x}" cy="${p.y}" r="${SZ * 0.82}" fill="none" stroke="${actorCol}" stroke-width="3.5" class="pulse" pointer-events="none"/>`; }
+  else if (hl.to !== null && hl.to !== undefined) { const p = cxy(hl.to); g += `<circle cx="${p.x}" cy="${p.y}" r="${SZ * 0.82}" fill="none" stroke="#fff" stroke-width="3" class="pulse" pointer-events="none"/>`; }
+  for (const [i, t] of S.tokens) {
+    const p = cxy(i), x = p.x - SZ * 0.62, y = p.y - SZ * 0.58;
+    g += `<g pointer-events="none"><circle cx="${x}" cy="${y}" r="9.5" fill="#1b120a" stroke="#ffd54a" stroke-width="1.6"/><text x="${x}" y="${y + 4.2}" text-anchor="middle" font-size="12" font-weight="700" fill="#ffd54a">${t}</text></g>`;
+  }
+  if (D && D.src !== null && D.src !== undefined) { const p = cxy(D.src); g += `<polygon points="${hexPts(p.x, p.y)}" fill="none" stroke="#ffeb3b" stroke-width="4" pointer-events="none"/>`; }
+  for (const k of Object.keys(legal)) {
+    const p = cxy(+k);
+    g += `<polygon points="${hexPts(p.x, p.y)}" fill="rgba(0,230,118,.22)" stroke="#00e676" stroke-width="3" class="pulse" style="cursor:pointer" onclick="act(${legal[k].a})"><title>${esc(legal[k].text)}</title></polygon>`;
+  }
+  if ($('coords') && $('coords').checked) for (const c of B.cells) { const p = cxy(c.i); g += `<text x="${p.x}" y="${p.y + SZ * 0.84}" text-anchor="middle" font-size="9" fill="#222" pointer-events="none">${c.col},${c.line}</text>`; }
+  return {html: g, w: maxx + 50, h: maxy + 50};
+}
+function renderBoard() {
+  const b = boardSVG(), svg = $('board');
+  svg.setAttribute('viewBox', `0 0 ${b.w} ${b.h}`);
+  svg.innerHTML = b.html;
+}
+
+// ---------- painel central: ações + eventos ----------
+function renderDash() {
+  const D = S.decision, legalLine = {};
+  if (D && D.phase === 'CHOOSE_ACTION') D.actions.forEach((a, idx) => { legalLine[a.a] = idx; });
+  const st = B.action_start[S.P];
+  let h = `<h2>Painel central</h2><div class="hint" style="margin-bottom:4px">Vez de <b>J${S.cur}</b> (${S.players[S.cur] ? GOD_PT[S.players[S.cur].god] : ''})</div>`;
+  for (let l = 0; l < 4; l++) {
+    const lg = legalLine[l] !== undefined, picked = SEL && SEL.a === l && lg;
+    const fl = FRAME && FRAME.hl && FRAME.hl.line === l;
+    h += `<div class="arow ${lg ? 'legal' : ''} ${picked ? 'picked' : ''} ${fl ? 'flash' : ''}" ${lg ? `onclick="sel(${legalLine[l]})"` : ''} title="${ACT_PT[l][0]}"><b>${ACT_PT[l][1]} ${ACT_PT[l][0]}</b>`;
+    for (let k = 0; k <= B.action_end; k++) h += `<i class="slot ${k < st ? 'off' : ''} ${k === B.action_end ? 'end' : ''} ${k === S.markers[l] ? 'mk' : ''}"></i>`;
+    h += '</div>';
+  }
+  h += '<div class="evnote">O marcador anda 1 casa a cada ação. Na casa "!" a ação dispara o próximo evento.</div>';
+  let ord = 0;
+  const rows = [B.events.slice(0, 6), B.events.slice(6, 12), B.events.slice(12, 18)];
+  h += '<h2 style="margin-top:10px">Linha do tempo</h2>';
+  rows.forEach((row, r) => {
+    const cells = row.map((k, c) => ({k, i: r * 6 + c, ord: k === 'conf' ? null : 0}));
+    h += '<div class="evgrid">';
+    const ordered = r % 2 === 1 ? cells.slice().reverse() : cells;
+    ordered.forEach(e => {
+      let o = 0; B.events.slice(0, e.i + 1).forEach(x => { if (x === 'conf') o++; });
+      const ic = e.k === 'ctrl' ? '▲' : e.k === 'camel' ? '🐪' : '⚔';
+      const nm = e.k === 'ctrl' ? 'Controlar Monumento' : e.k === 'camel' ? 'Caravana de Camelos' : 'Conflito ' + o;
+      h += `<div class="ev ${e.k} ${e.i < S.event_idx ? 'done' : ''} ${e.i === S.event_idx ? 'next' : ''} ${e.i === S.event_idx - 1 ? 'cur' : ''}" title="${nm}">${ic}${e.k === 'conf' ? '<small>C' + o + '</small>' : ''}</div>`;
+    });
+    h += '</div>';
+  });
+  h += '<div class="evnote">⚔ Conflito &middot; 🐪 Camelos &middot; ▲ Controlar Monumento.<br>C3: os 2 últimos deuses se fundem (3+ jogadores). C4: deuses na zona vermelha são esquecidos. Vence quem chegar ao topo da Devoção.</div>';
+  setHTML('dash', h);
+}
+
+// ---------- tabuleiro de devoção ----------
+function renderDevo() {
+  const W = 262, rowH = 50, rows = 8, H = rows * rowH + 46;
+  const pos = k => { const r = Math.floor(k / 4); let c = k % 4; if (r % 2) c = 3 - c; return {x: 48 + c * 56, y: H - 40 - r * rowH}; };
+  let s = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto"><defs><radialGradient id="gR" cx=".35" cy=".3"><stop offset="0" stop-color="#e86a4a"/><stop offset="1" stop-color="#7a1f10"/></radialGradient><radialGradient id="gB" cx=".35" cy=".3"><stop offset="0" stop-color="#6fa8e8"/><stop offset="1" stop-color="#1f4f8a"/></radialGradient><radialGradient id="gG" cx=".35" cy=".3"><stop offset="0" stop-color="#fff2a8"/><stop offset="1" stop-color="#c9951c"/></radialGradient></defs>`;
+  let path = ''; for (let k = 0; k <= B.top; k++) { const p = pos(k); path += (k ? 'L' : 'M') + p.x + ' ' + p.y; }
+  s += `<path d="${path}" fill="none" stroke="#c9a24a" stroke-width="3" opacity=".55"/>`;
+  for (let k = 0; k <= B.top; k++) {
+    const p = pos(k), top = k === B.top;
+    s += `<circle cx="${p.x}" cy="${p.y}" r="${top ? 20 : 17}" fill="url(#${top ? 'gG' : k < B.red ? 'gR' : 'gB'})" stroke="#e6cf92" stroke-width="2"/><text x="${p.x}" y="${p.y + 4}" text-anchor="middle" font-size="${top ? 17 : 10}" fill="#fff" opacity="${top ? 1 : .7}" style="pointer-events:none">${top ? '☥' : k}</text>`;
+  }
+  const stack = {};
+  for (const p of S.players) {
+    if (!p.alive) continue;
+    const q = pos(p.dev), n = (stack[p.dev] = (stack[p.dev] || 0) + 1) - 1;
+    const ox = (p.dev_order >= 0 ? p.dev_order : n) * 6 + (p.absorbed ? 9 : 0), oy = (p.dev_order >= 0 ? p.dev_order : n) * -6;
+    s += `<g><circle cx="${q.x + ox - 6}" cy="${q.y + oy - 2}" r="11" fill="${GOD_COL[p.god]}" stroke="${p.seat === S.human ? '#fff' : '#1b120a'}" stroke-width="${p.seat === S.human ? 3 : 2}" filter="drop-shadow(0 2px 2px rgba(0,0,0,.7))"/><text x="${q.x + ox - 6}" y="${q.y + oy + 2}" text-anchor="middle" font-size="9.5" font-weight="700" fill="#fff" style="paint-order:stroke;stroke:#000;stroke-width:1.8px">J${p.seat}</text></g>`;
+  }
+  s += '</svg><div class="hint">Vermelho: zona de risco (esquecido após o 4º Conflito). O token de cima da pilha tem mais Devoção.</div>';
+  setHTML('devo', s);
+}
+
+// ---------- oponentes ----------
+function renderOpps() {
+  let h = '';
+  for (const p of S.players) {
+    if (p.seat === S.human) continue;
+    const tags = [];
+    if (!p.alive) tags.push('<span class="chip bad">esquecido</span>');
+    if (p.absorbed) tags.push(`<span class="chip warn">absorvido por J${p.ent}</span>`);
+    if (p.superior) tags.push(`<span class="chip warn">fundido com J${S.merged[1]}</span>`);
+    if (S.tiebreak_holder === p.seat && S.tiebreak_available) tags.push('<span class="chip">desempate</span>');
+    if (p.god === 4) tags.push(`<span class="chip">Sol ${p.sun_left}</span>`);
+    if (p.god === 3) tags.push(`<span class="chip">Underworld ${p.uw_off}</span>`);
+    if (p.god === 1) tags.push(`<span class="chip">presos ${p.trapped}/${S.anubis_slots}</span>`);
+    const pw = p.powers.map(k => `<span class="chip l${Math.floor(k / 4) + 1}" title="${esc(POWER_PT[k][0] + ': ' + POWER_PT[k][1])}">${POWER_PT[k][0]}</span>`).join('');
+    const usedSet = new Set(p.used);
+    const minis = CARD_PT.map((c, i) => `<span class="mini ${usedSet.has(i) ? 'used' : ''}" title="${esc(c[0])}${usedSet.has(i) ? ' (usada)' : ''}"></span>`).join('');
+    const gp = p.gpool.length ? ' · Guardiões: ' + p.gpool.map(k => KIND_PT[k]).join(', ') : '';
+    h += `<div class="opp ${S.cur === p.seat ? 'turn' : ''} ${p.alive ? '' : 'dead'}"><div class="hd" style="background:${GOD_COL[p.god]}">J${p.seat} · ${GOD_PT[p.god]}${p.god2 !== null && p.god2 !== undefined ? ' + ' + GOD_PT[p.god2] : ''}${S.cur === p.seat ? ' ◄ vez' : ''}</div>` +
+      `<div class="bd"><span class="stat">Devoção <b>${p.dev}</b></span><span class="stat">Seguidores <b>${p.followers}</b></span><span class="stat">Guerreiros <b>${p.board_w}</b>/${p.board_w + p.pool}</span><div>${tags.join('')}${pw}</div>` +
+      `<div style="margin-top:3px" title="Cartas de batalha: vermelhas = já usadas">${minis}</div><div class="hint">${esc(gp)}</div></div></div>`;
+  }
+  setHTML('opps', h);
+}
+
+// ---------- painel do seu deus ----------
+function renderGod() {
+  const me = S.players[S.human], D = S.decision;
+  const legalPw = {};
+  if (D && D.phase === 'UNLOCK_PICK') D.actions.forEach((a, idx) => { legalPw[a.power] = idx; });
+  const ab = GOD_ABILITY[me.god];
+  let h = `<h2 style="color:${GOD_COL[me.god]}">${GOD_PT[me.god]}${me.god2 !== null && me.god2 !== undefined ? ' + ' + GOD_PT[me.god2] : ''} &middot; você é J${S.human}</h2>`;
+  h += `<div class="abil"><b>${ab[0]}</b><br>${esc(ab[1])}</div>`;
+  const unlocked = new Set(me.powers);
+  h += '<div class="lvls">';
+  for (let l = 0; l < 3; l++) {
+    h += `<div><h3>Nível ${l + 1}</h3>`;
+    for (let k = l * 4; k < l * 4 + 4; k++) {
+      const on = unlocked.has(k), lg = legalPw[k] !== undefined, pk = SEL && SEL.power === k;
+      h += `<div class="pw ${on ? 'on' : ''} ${lg ? 'legal' : ''} ${pk ? 'picked' : ''}" ${lg ? `onclick="sel(${legalPw[k]})"` : ''} title="${esc(POWER_PT[k][1])}"><div class="tk" style="${on ? 'background:' + GOD_COL[me.god] : ''}">${on ? '☥' : ''}</div><div><b>${POWER_PT[k][0]}</b><span>${esc(POWER_PT[k][1])}</span></div></div>`;
+    }
+    h += '</div>';
+  }
+  h += '</div><div class="pool">';
+  const nxt = me.unlock_next;
+  for (let l = 0; l < 3; l++) {
+    const left = Math.max(0, 2 - Math.max(0, nxt - 2 * l));
+    const tk = `<span class="ankhtk" style="background:${GOD_COL[me.god]}">☥</span>`;
+    h += `<span class="hint">Nv${l + 1}:</span>` + tk.repeat(Math.min(2, left)) + (left === 0 ? '<span class="hint">✔</span>' : '');
+    h += '&nbsp;&nbsp;';
+  }
+  h += `</div><div class="hint" style="margin-top:6px"><span class="stat">Devoção <b>${me.dev}</b></span> <span class="stat">Seguidores <b>${me.followers}</b></span> <span class="stat">Guerreiros no mapa <b>${me.board_w}</b> / reserva <b>${me.pool}</b></span> <span class="stat">Tokens Ankh <b>${me.ankh}</b></span></div>`;
+  const extra = [];
+  if (me.god === 4) extra.push(`Sol restante: ${me.sun_left}`);
+  if (me.god === 3) extra.push(`Underworld fora do mapa: ${me.uw_off}`);
+  if (me.god === 1) extra.push(`Guerreiros presos: ${me.trapped}/${S.anubis_slots}`);
+  if (me.gpool.length) extra.push('Guardiões na reserva: ' + me.gpool.map(k => KIND_PT[k]).join(', '));
+  extra.push(`Guardiões em jogo: nv1 ${KIND_PT[S.g_card[1]]} (${S.g_supply[1]}), nv2 ${KIND_PT[S.g_card[2]]} (${S.g_supply[2]}), nv3 ${KIND_PT[S.g_card[3]]} (${S.g_supply[3]})`);
+  h += `<div class="hint" style="margin-top:4px">${esc(extra.join(' · '))}</div>`;
+  setHTML('god', h);
+}
+
+// ---------- cartas ----------
+function cardHTML(c, cls, attrs) {
+  const k = CARD_PT[c];
+  return `<div class="bcard ${cls || ''}" ${attrs || ''} title="${esc(k[0] + ' (' + k[1] + '): ' + k[4])}"><div class="bn">${k[1]}</div><div class="ttl" style="background:${k[3]}">${esc(k[0].replace(' of Locusts', '').replace(" of Ma'at", ''))}</div><div class="art">${k[2]}</div><div class="tx">${esc(k[4])}</div></div>`;
+}
+function renderHand() {
+  const D = S.decision, me = S.players[S.human], inHand = new Set(S.hand), used = new Set(me.used);
+  const legal = {};
+  if (D && D.phase === 'BATTLE_CARD') D.actions.forEach((a, idx) => { legal[a.card] = idx; });
+  let h = '';
+  for (let c = 0; c < 7; c++) {
+    const lg = legal[c] !== undefined, pk = SEL && SEL.card === c;
+    h += cardHTML(c, `${lg ? 'playable' : ''} ${pk ? 'picked' : ''} ${inHand.has(c) ? '' : 'used'}`, lg ? `onclick="sel(${legal[c]})"` : '');
+  }
+  setHTML('hand', h);
+}
+function renderBattle() {
+  const box = $('battlebox');
+  if (!S.cur_region) { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  let h = '<div class="row">';
+  const cc = S.cur_cards || {};
+  const ks = Object.keys(cc).filter(e => cc[e].length);
+  if (!ks.length) h += '<div class="hint">Os jogadores estão escolhendo as cartas em segredo… (região destacada no mapa)</div>';
+  for (const e of ks) {
+    h += `<div class="who"><span class="dot" style="background:${gcol(+e)}"></span>J${e}<br>` + cc[e].map(c => cardHTML(c, 'rev')).join('') + '</div>';
+  }
+  setHTML('battle', h + '</div>');
+}
+
+// ---------- bandeja de decisão ----------
+function selLabel(a) {
+  const D = S.decision;
+  if (D.phase === 'CHOOSE_ACTION') return ACT_PT[a.a][0];
+  if (D.phase === 'BATTLE_CARD') return CARD_PT[a.card][0];
+  if (D.phase === 'UNLOCK_PICK') return 'Desbloquear ' + POWER_PT[a.power][0];
+  return a.text;
+}
+function sel(idx) {
+  const a = S.decision.actions[idx];
+  SEL = {idx, a: a.a, card: a.card, power: a.power, label: selLabel(a)};
+  renderAll(true);
+}
+function cancelSel() { SEL = null; renderAll(true); }
+function confirmSel() { if (SEL) act(SEL.a); }
+function setHover(idx) { HOVER = idx < 0 ? null : S.decision.actions[idx]; renderBoard(); }
+function actBid() { const v = +$('bidv').value; const a = S.decision.actions.find(x => x.bid === v); if (a) act(a.a); }
+function actCamel() { act(S.decision.actions[+$('camelsel').value].a); }
+function bar(statusCls, status, prompt, ctl) {
+  setHTML('tray', `<div class="decin"><div id="status" class="${statusCls}">${status}</div><div class="prompt">${prompt}</div><div class="ctl">${ctl || ''}</div></div>`);
+}
+function renderTray() {
+  const D = S.decision;
+  if (S.done) {
+    const w = S.winner;
+    bar('end', 'Fim de jogo', w === null ? 'Egito ateu (empate).' : `Vence J${w} (${GOD_PT[S.players[w].god]})${w === S.human ? ' — VOCÊ!' : ''}`,
+      '<button class="btn" onclick="openModal()">Nova partida</button>');
+    return;
+  }
+  if (!D) {
+    bar('', PLAY.on ? 'Oponentes jogando…' : 'Aguardando…', 'Use Pausar / Passo / Pular no topo para controlar a reprodução das jogadas.');
+    return;
+  }
+  const prompt = esc(PROMPT[D.phase] || D.phase);
+  const status = `Sua vez — J${S.human} (${GOD_PT[S.players[S.human].god]})`;
+  const btns = D.actions.map((a, idx) => ({a, idx})).filter(x => x.a.cell === undefined);
+  let ctl = '';
+  if (D.phase === 'BID') {
+    const mx = Math.max(...btns.map(x => x.a.bid));
+    ctl = `<input type="range" id="bidv" min="0" max="${mx}" value="0" oninput="document.getElementById('bidout').textContent=this.value"><span class="bidn" id="bidout">0</span> Seguidores <button class="btn" onclick="actBid()">Apostar</button>`;
+  } else if (D.phase === 'CAMEL_LINE') {
+    ctl = `<select id="camelsel" onchange="setHover(+this.value)">` + btns.map(x => `<option value="${x.idx}">${x.a.edges ? 'Linha ' + x.idx + ' (' + x.a.edges.length + ' camelos)' : 'Não colocar camelos'}</option>`).join('') + `</select><button class="btn" onclick="actCamel()">Confirmar</button>`;
+  } else if (['CHOOSE_ACTION', 'BATTLE_CARD', 'UNLOCK_PICK'].includes(D.phase)) {
+    ctl = SEL ? `<div class="conf"><b>${esc(SEL.label)}</b><button class="btn" onclick="confirmSel()">Confirmar</button><button class="btn dark" onclick="cancelSel()">Trocar</button></div>`
+      : '<span class="hint">Clique numa opção destacada em verde.</span>';
+  } else {
+    ctl = '<div class="acts">' + btns.map(x => {
+      const hv = (x.a.edges || x.a.region || x.a.regions) ? `onmouseenter="setHover(${x.idx})" onmouseleave="setHover(-1)"` : '';
+      return `<button class="btn dark" ${hv} onclick="act(${x.a.a})">${esc(cap(x.a.text.replace(/^escolhe a acao: /, '')))}</button>`;
+    }).join('') + '</div>';
+    if (!btns.length) ctl = '<span class="hint">As casas verdes no tabuleiro são as opções.</span>';
+  }
+  bar('me', status, prompt, ctl);
+}
+
+// ---------- registro, faixa e fim ----------
+function renderLog() {
+  const el = $('log');
+  const stick = !el.scrollHeight || el.scrollTop + el.clientHeight >= el.scrollHeight - 30;
+  setHTML('log', LOG.slice(-120).map(l => {
+    const c = l.startsWith('>>>') ? 'ev1' : l.startsWith('FIM') ? 'fim' : l.startsWith('J' + S.human + ' ') ? 'me' : '';
+    return `<div class="${c}">${esc(l)}</div>`;
+  }).join(''));
+  if (stick) el.scrollTop = el.scrollHeight;
+}
+function renderBanner() {
+  const b = $('banner');
+  if (FRAME) {
+    const t = FRAME.lines[0].replace(/^J\d+ \([a-z]+\): /, '');
+    const who = FRAME.actor === S.human ? 'Você' : `J${FRAME.actor} · ${GOD_PT[S.players[FRAME.actor].god]}`;
+    b.style.display = 'block';
+    b.innerHTML = `<span class="dot" style="background:${gcol(FRAME.actor)}"></span><b>${esc(who)}</b> ${esc(t)}` + FRAME.lines.slice(1).map(x => `<div class="l2">${esc(x.trim())}</div>`).join('');
+  } else if (S.decision) {
+    b.style.display = 'block';
+    b.innerHTML = `<b>Sua vez</b> — ${esc(PROMPT[S.decision.phase] || '')}`;
+  } else b.style.display = 'none';
+}
+function renderEnd() {
+  if (S.done && ENDSHOWN !== S.seed + ':' + S.scenario && !PLAY.on) {
+    ENDSHOWN = S.seed + ':' + S.scenario;
+    const w = S.winner;
+    $('endt').textContent = w === null ? 'Egito ateu' : (w === S.human ? 'Vitória!' : 'Fim de jogo');
+    $('endp').textContent = w === null ? 'Todos os deuses foram esquecidos.' : `Vence J${w} (${GOD_PT[S.players[w].god]})${S.merged && S.merged[0] === w ? ` fundido com J${S.merged[1]}` : ''}.`;
+    $('endov').style.display = 'flex';
+  }
+}
+function renderAll(keep) {
+  if (!keep) { HOVER = null; SEL = null; }
+  setHTML('meta', `${S.scenario} · seed ${S.seed} · IA: ${esc(S.ai)}`);
+  setHTML('warn', (S.warnings || []).map(w => `<div class="warn">${esc(w)}</div>`).join(''));
+  renderOpps(); renderBoard(); renderDash(); renderDevo(); renderBattle(); renderGod(); renderHand(); renderTray(); renderLog(); renderBanner(); renderEnd();
+}
+
+// ---------- reprodução passo a passo ----------
+function wait(ms) { return new Promise(res => { const t = setTimeout(done, ms); function done() { clearTimeout(t); PLAY.wake = null; res(); } PLAY.wake = done; }); }
+function waitManual() { return new Promise(res => { PLAY.wake = () => { PLAY.wake = null; res(); }; }); }
+async function playPayload(pl) {
+  const base = +$('speed').value;
+  PLAY.on = true; PLAY.skip = false;
+  $('bstep').disabled = !PLAY.paused;
+  if (base > 0) {
+    for (const fr of pl.frames) {
+      if (PLAY.skip) break;
+      S = Object.assign({}, fr.state, {decision: null});
+      FRAME = fr; LOG = LOG.concat(fr.lines);
+      renderAll();
+      if (PLAY.paused) await waitManual();
+      else await wait(Math.max(120, base * fr.slow * (fr.actor === fr.state.human ? 0.55 : 1)));
+    }
+  }
+  PLAY.on = false; FRAME = null;
+  S = pl.state; LOG = S.log || LOG;
+  renderAll();
+}
+async function act(a) {
+  if (busy || PLAY.on) return; busy = true;
+  try { SEL = null; HOVER = null; await playPayload(await api('/api/act', {a})); }
+  catch (e) { alert('Erro: ' + e.message); } finally { busy = false; }
+}
+
+// ---------- API, janela de nova partida ----------
+async function api(path, body) {
+  const r = await fetch(path, body === undefined ? {} : {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
+  const j = await r.json();
+  if (!r.ok) throw new Error(j.erro || r.status);
+  return j;
+}
+function openModal() {
+  $('endov').style.display = 'none';
+  $('f_sc').innerHTML = Object.entries(OPT.scenarios).map(([n, p]) => `<option value="${n}">${n} (${p} jogadores)</option>`).join('');
+  $('f_god').innerHTML = '<option value="-1">Aleatório</option>' + OPT.gods.map((g, i) => `<option value="${i}">${GOD_PT[i]}</option>`).join('');
+  $('f_ai').innerHTML = '<option value="random">Aleatória</option>' + OPT.models.map((m, i) => `<option value="${i}">${esc(m)}</option>`).join('');
+  if (OPT.models.length) $('f_ai').value = '0';
+  $('f_sc').onchange = fillSeats; fillSeats();
+  $('modal').style.display = 'flex';
+}
+function fillSeats() {
+  const P = OPT.scenarios[$('f_sc').value];
+  let h = '<option value="-1">Aleatório</option>';
+  for (let s = 0; s < P; s++) h += `<option value="${s}">J${s}${s === 0 ? ' (joga primeiro)' : ''}</option>`;
+  $('f_seat').innerHTML = h;
+}
+async function startGame() {
+  PLAY.skip = true; if (PLAY.wake) PLAY.wake();
+  const body = {scenario: $('f_sc').value, human: +$('f_seat').value, god: +$('f_god').value, ai: $('f_ai').value, seed: $('f_seed').value};
+  $('modal').style.display = 'none';
+  try { LOG = []; ENDSHOWN = null; busy = true; await new Promise(r => setTimeout(r, 30)); await playPayload(await api('/api/new', body)); }
+  catch (e) { alert('Erro: ' + e.message); } finally { busy = false; }
+}
+async function init() {
+  B = await api('/api/board'); OPT = await api('/api/options');
+  $('btnnew').onclick = openModal; $('f_cancel').onclick = () => { $('modal').style.display = 'none'; };
+  $('f_go').onclick = startGame; $('coords').onchange = () => { if (S) renderBoard(); };
+  $('bpause').onclick = () => {
+    PLAY.paused = !PLAY.paused;
+    $('bpause').textContent = PLAY.paused ? '▶ Continuar' : '⏸ Pausar'; $('bstep').disabled = !PLAY.paused;
+    if (!PLAY.paused && PLAY.wake) PLAY.wake();
+  };
+  $('bstep').onclick = () => { if (PLAY.wake) PLAY.wake(); };
+  $('bskip').onclick = () => { PLAY.skip = true; PLAY.paused = false; $('bpause').textContent = '⏸ Pausar'; if (PLAY.wake) PLAY.wake(); };
+  const pl = await api('/api/state');
+  if (pl.state.started) { S = pl.state; LOG = S.log || []; renderAll(); } else openModal();
+}
+if (!window.__NOINIT) init();
+</script>
+</body>
+</html>
